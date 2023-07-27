@@ -206,7 +206,6 @@ private:
         return query;
     }
 
-    // Existence required
     double ComputeWordInverseDocumentFreq(const string& word) const {
         return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
     }
@@ -244,7 +243,6 @@ private:
     }
 };
 
-// ==================== для примера =========================
 
 void PrintDocument(const Document& document) {
     cout << "{ "s
