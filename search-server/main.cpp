@@ -110,7 +110,7 @@ public:
         }
          
         if (documents_.count(document_id) != 0){
-             throw invalid_argument("invalid_argument");
+             throw invalid_argument("incorrect _id");
         }
  
  
@@ -120,6 +120,7 @@ public:
             word_to_document_freqs_[word][document_id] += inv_word_count;
         }
         documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
+        document_ids.push_back(document_id);
     }
  
     template <typename DocumentPredicate>
@@ -168,7 +169,7 @@ public:
             throw invalid_argument("invalid_argument");
         }
         if (!IsValidWord(raw_query)){
-            throw invalid_argument("invalid_argument");
+            throw invalid_argument("no_valid_word");
         }
         const Query query = ParseQuery(raw_query);
         vector<string> matched_words;
@@ -193,20 +194,8 @@ public:
     }
  
  
-    int GetDocumentId(int index) const {
-        if (index > documents_.size() || index < 0){
-            throw out_of_range("out_of_range");
-        }
-        int i = 0;
-        int t_id = 0;
-        for (const auto [id, bruh] : documents_)
-        {
-            if (i == index)
-                return id;
-            i++;
-            t_id = id;
-        }
-        return t_id;
+     int GetDocumentId(int index) const {
+        return document_ids.at(index);
     }
     // метод выше сделать лучше или необоходимо? , так как по мне этот вариант выглядит легче и понятнее.
  
@@ -218,7 +207,7 @@ private:
     const set<string> stop_words_;
     map<string, map<int, double>> word_to_document_freqs_;
     map<int, DocumentData> documents_;
- 
+    vector<int> document_ids;
     bool IsStopWord(const string& word) const {
         return stop_words_.count(word) > 0;
     }
@@ -339,7 +328,6 @@ private:
     }
 };
 
-//дополнил все как вы сказали, но странно, почему вам не понравилась моя 100 строка, так как этот конструктор требуется вроде бы по заданию
 
 int main(){
     
