@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <optional>
+#include <numeric>
  
 using namespace std;
  
@@ -93,13 +94,8 @@ public:
             }
     }
  
-    explicit SearchServer(const string& stop_words_text)
-        : SearchServer(
-            SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
+    explicit SearchServer(const string& stop_words_text): SearchServer(SplitIntoWords(stop_words_text))
     {
-        if (!IsValidWord(stop_words_text)){
-            throw invalid_argument("invalid_argument");
-        }
     }
  
      void AddDocument(int document_id, const string& document, DocumentStatus status,
@@ -109,9 +105,14 @@ public:
         }
         
  
-        if (document_id < 0 || documents_.count(document_id) != 0){
+        if (document_id < 0 ){
              throw invalid_argument("invalid_argument");
         }
+         
+        if (documents_.count(document_id) != 0){
+             throw invalid_argument("invalid_argument");
+        }
+ 
  
         const vector<string> words = SplitIntoWordsNoStop(document);
         const double inv_word_count = 1.0 / words.size();
@@ -124,7 +125,7 @@ public:
     template <typename DocumentPredicate>
      vector<Document> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const {
  
-        if (check_query(raw_query)){
+        if (Check_query_valid(raw_query)){
             throw invalid_argument("invalid_argument");
         }
         if (!IsValidWord(raw_query)){
@@ -163,7 +164,7 @@ public:
     }
  
       tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query, int document_id) const {
-        if (check_query(raw_query)){
+        if (Check_query_valid(raw_query)){
             throw invalid_argument("invalid_argument");
         }
         if (!IsValidWord(raw_query)){
@@ -207,6 +208,7 @@ public:
         }
         return t_id;
     }
+    // метод выше сделать лучше или необоходимо? , так как по мне этот вариант выглядит легче и понятнее.
  
 private:
     struct DocumentData {
@@ -228,7 +230,7 @@ private:
         });
     }
  
-   static bool check_query(const string& text) 
+   static bool Check_query_valid(const string& text) 
     {
         for (int i = 0; i < text.size(); i++)
         {
@@ -241,6 +243,9 @@ private:
     vector<string> SplitIntoWordsNoStop(const string& text) const {
         vector<string> words;
         for (const string& word : SplitIntoWords(text)) {
+            if (Check_query_valid(text)){
+                throw invalid_argument("invalid_argument");
+            }
             if (!IsStopWord(word)) {
                 words.push_back(word);
             }
@@ -253,9 +258,7 @@ private:
             return 0;
         }
         int rating_sum = 0;
-        for (const int rating : ratings) {
-            rating_sum += rating;
-        }
+        rating_sum = std::accumulate(ratings.begin(), ratings.end(), 0);
         return rating_sum / static_cast<int>(ratings.size());
     }
  
@@ -335,6 +338,8 @@ private:
         return matched_documents;
     }
 };
+
+//дополнил все как вы сказали, но странно, почему вам не понравилась моя 100 строка, так как этот конструктор требуется вроде бы по заданию
 
 int main(){
     
